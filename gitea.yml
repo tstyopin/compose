@@ -1,8 +1,9 @@
-version: "2"
+version: "3.8"
 
 services:
   gitea:
-    image: gitea/gitea:1.21.4-rootless
+    image: gitea/gitea:latest-rootless
+    container_name: gitea-app
     restart: always
     volumes:
       - gitea-data:/var/lib/gitea
@@ -13,10 +14,29 @@ services:
       - "3000:3000"
       - "2222:2222"
 
+  runner:
+    image: gitea/act_runner:latest
+    container_name: gitea-runner
+    restart: always
+    environment:
+      CONFIG_FILE: /data/config.yaml
+      GITEA_INSTANCE_URL: "http://192.168.80.202:3000/"
+      GITEA_RUNNER_REGISTRATION_TOKEN: "cc5mdEIUmXdchIN5gvBG3EKMuYZxFKb0NrydsttO"
+      GITEA_RUNNER_NAME: "INSTANCE_RUNNER"
+      GITEA_RUNNER_LABELS: "linux_amd64:host"
+    volumes:
+      - gitea-runner-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - gitea
+
 volumes:
   gitea-data:
     name: gitea-data
     external: false
   gitea-config:
     name: gitea-config
+    external: false
+  gitea-runner-data:
+    name: gitea-runner-data
     external: false
